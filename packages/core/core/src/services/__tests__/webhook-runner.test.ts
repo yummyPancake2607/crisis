@@ -185,6 +185,24 @@ describe('WebhookRunner', () => {
       expect(getRequests().map(([, payload]) => payload.uid)).toEqual([PAGE_UID]);
     });
 
+    test('Stops sending removed events and uses the updated webhook configuration', async () => {
+      const { runner, emit, getRequests } = setup();
+      const webhook = createWebhook({
+        url: 'https://old.example.com/hook',
+        events: ['entry.create', 'entry.update'],
+      });
+      runner.add(webhook);
+
+      runner.update({ ...webhook, url: 'https://new.example.com/hook', events: ['entry.create'] });
+
+      await emit('entry.update', entryEvent(ARTICLE_UID));
+      await emit('entry.create', entryEvent(ARTICLE_UID));
+
+      expect(getRequests().map(([url, payload]) => [url, payload.event])).toEqual([
+        ['https://new.example.com/hook', 'entry.create'],
+      ]);
+    });
+
     test('Stops listening to the events of a removed webhook', async () => {
       const { runner, emit, getRequests } = setup();
       const webhook = createWebhook({
