@@ -11,9 +11,11 @@ const DURATION_UNITS = {
 };
 
 const toDays = (durationInMilliseconds: number) => {
-  const { millisecondsInSecond, secondsInMinute, hoursInDay } = DURATION_UNITS;
+  const { millisecondsInSecond, secondsInMinute, minutesInHour, hoursInDay } = DURATION_UNITS;
 
-  return durationInMilliseconds / millisecondsInSecond / secondsInMinute / hoursInDay;
+  return (
+    durationInMilliseconds / millisecondsInSecond / secondsInMinute / minutesInHour / hoursInDay
+  );
 };
 
 export const getDateOfExpiration = (
