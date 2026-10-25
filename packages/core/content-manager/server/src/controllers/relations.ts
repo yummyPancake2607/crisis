@@ -39,9 +39,11 @@ const sanitizeMainField = (model: any, mainField: any, userAbility: any) => {
   const isMainFieldListable = isListable(model, mainField);
   // Field level permissions are only declared for the attributes of the model, so for
   // anything else (an id, a virtual field) the model wide read permission decides.
+  // A model attribute must be checked on its own: falling back to the model wide read
+  // permission would expose a field the user has been denied.
   const isModelAttribute = Boolean(model.attributes?.[mainField]);
   const canReadMainField = isModelAttribute
-    ? permissionChecker.can.read(null, mainField) || permissionChecker.can.read()
+    ? permissionChecker.can.read(null, mainField)
     : permissionChecker.can.read();
 
   if (!isMainFieldListable || !canReadMainField) {

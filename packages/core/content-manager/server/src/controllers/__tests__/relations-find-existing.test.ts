@@ -31,9 +31,11 @@ const PERMITTED_FIELDS = ['name', 'publishedAt', 'updatedAt', 'documentId'];
 const setupStrapi = ({
   permissionQuery,
   dbQuery,
+  canRead = () => true,
 }: {
   permissionQuery: Record<string, unknown>;
   dbQuery: Record<string, jest.Mock>;
+  canRead?: (field?: string) => boolean;
 }) => {
   global.strapi = {
     getModel: jest.fn((uid: string) => {
@@ -53,7 +55,7 @@ const setupStrapi = ({
         services: {
           'permission-checker': {
             create: jest.fn().mockReturnValue({
-              can: { read: jest.fn().mockReturnValue(true) },
+              can: { read: jest.fn((_entity?: unknown, field?: string) => canRead(field)) },
               cannot: { read: jest.fn().mockReturnValue(false) },
               sanitizedQuery: { read: jest.fn().mockResolvedValue(permissionQuery) },
             }),
@@ -177,6 +179,26 @@ describe('findExisting', () => {
         pagination: { page: 1, pageCount: 1, pageSize: 10, total: 1 },
         results: [{ id: 3, documentId: 'tag-3', name: 'Tag 3' }],
       });
+    });
+  });
+
+  describe('when the user cannot read the main field of the target', () => {
+    it('does not use the main field as the label, even though the model can be read', async () => {
+      const dbQuery = {
+        findOne: jest.fn().mockResolvedValue({ id: 10 }),
+        loadPages: jest.fn().mockResolvedValue({ results: [], pagination: {} }),
+        load: jest.fn(),
+      };
+      // The model can be read, but its name field is denied by the field level permissions
+      setupStrapi({
+        permissionQuery: { fields: ['publishedAt', 'updatedAt', 'documentId'], filters: {} },
+        dbQuery,
+        canRead: (field) => field !== 'name',
+      });
+
+      await relations.findExisting(createCtx('tags'));
+
+      expect(dbQuery.loadPages.mock.calls[0][2].select).not.toContain('name');
     });
   });
 
