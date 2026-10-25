@@ -89,7 +89,10 @@ const EditConfigurationPage = () => {
             return;
           }
 
-          Object.assign({ ...field.edit }, editedMetadata);
+          // Assign into the field's own edit metadata, which is what gets sent
+          // as `metadatas`. Assigning into a spread copy would discard every
+          // edited label, description, placeholder and toggle.
+          Object.assign(field.edit, editedMetadata);
         });
 
       const res = await updateConfiguration({
