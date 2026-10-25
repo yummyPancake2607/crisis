@@ -62,8 +62,8 @@ interface WillRegisterContextParams {
 const createWillRegisterContext = ({ permission, options }: WillRegisterContextParams) => {
   // The clauses the permission already carries. Hooks add to them, and the
   // condition is rebuilt from the collected list on every call.
-  const clauses: unknown[] = Array.isArray(permission.condition?.$or)
-    ? [...permission.condition.$or]
+  const clauses: unknown[] = Array.isArray(permission.condition?.$and)
+    ? [...permission.condition.$and]
     : [];
 
   return {
