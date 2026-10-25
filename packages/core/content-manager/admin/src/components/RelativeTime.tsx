@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Duration, intervalToDuration, isValid } from 'date-fns';
+import { Duration, intervalToDuration, isPast, isValid } from 'date-fns';
 import { useIntl } from 'react-intl';
 
 const EMPTY_CUSTOM_INTERVALS: NonNullable<RelativeTimeProps['customIntervals']> = [];
@@ -59,8 +59,8 @@ const RelativeTime = React.forwardRef<HTMLTimeElement, RelativeTimeProps>(
         return interval[intervalUnit] > 0 && Object.keys(interval).includes(intervalUnit);
       }) ?? 'seconds';
 
-    const elapsed = Date.now() - timestamp.getTime();
-    const relativeTime = Math.sign(elapsed) * interval[unit];
+    const value = interval[unit] ?? 0;
+    const relativeTime = isPast(timestamp) ? -value : value;
 
     // Display custom text if interval is less than the threshold
     const customInterval = customIntervals.find(
