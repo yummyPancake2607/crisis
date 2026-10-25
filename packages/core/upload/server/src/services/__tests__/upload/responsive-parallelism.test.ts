@@ -108,6 +108,19 @@ describe('generateResponsiveFormats (sequential resizes)', () => {
     expect(getToFile()).toHaveBeenCalledTimes(3);
     expect(getToFileState().maxInFlight).toBe(1);
   });
+
+  test.each([
+    [1600, 400, ['large', 'medium', 'small']],
+    [400, 1600, ['large', 'medium', 'small']],
+    [900, 900, ['medium', 'small']],
+    [1200, 1200, ['large', 'medium', 'small']],
+  ])('generates every fitting variant for %sx%s images', async (width, height, expectedKeys) => {
+    (sharp as any).__setNextMetadata({ width, height, format: 'jpeg' });
+
+    const formats = await imageManipulation.generateResponsiveFormats(testFile);
+
+    expect(formats.map(({ key }) => key)).toEqual(expectedKeys);
+  });
 });
 
 describe('generateResponsiveFormats (no toFile when nothing to resize)', () => {
