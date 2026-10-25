@@ -43,23 +43,6 @@ const EMPTY_ATTRIBUTE: NonNullable<UIDInputProps['attribute']> = {};
 
 const UID_REGEX = /^[A-Za-z0-9-_.~]*$/;
 
-/**
- * How long an availability notice stays on screen, in ms, once we have an answer from the
- * server. `null` keeps the notice until the field is checked again.
- */
-const AVAILABILITY_NOTICE_TIMEOUTS: Record<'available' | 'unavailable', number | null> = {
-  available: null,
-  unavailable: 4000,
-};
-
-const getAvailabilityNoticeTimeout = (availability?: CheckUIDAvailability.Response) => {
-  if (!availability) {
-    return null;
-  }
-
-  return AVAILABILITY_NOTICE_TIMEOUTS[availability.isAvailable ? 'available' : 'unavailable'];
-};
-
 interface UIDInputProps extends Omit<InputProps, 'type'> {
   attribute?: Pick<Schema.Attribute.UIDProperties, 'regex'>;
   type: Schema.Attribute.TypeOf<Schema.Attribute.UID>;
@@ -190,18 +173,18 @@ const UIDInput = React.forwardRef<HTMLInputElement, UIDInputProps>(
        */
       setAvailability(availabilityData);
 
-      const timeout = getAvailabilityNoticeTimeout(availabilityData);
+      let timer: number;
 
-      if (timeout === null) {
-        return undefined;
+      if (availabilityData?.isAvailable) {
+        timer = window.setTimeout(() => {
+          setAvailability(undefined);
+        }, 4000);
       }
 
-      const timer = window.setTimeout(() => {
-        setAvailability(undefined);
-      }, timeout);
-
       return () => {
-        clearTimeout(timer);
+        if (timer) {
+          clearTimeout(timer);
+        }
       };
     }, [availabilityData]);
 
