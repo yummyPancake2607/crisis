@@ -159,7 +159,7 @@ const VersionsListItems = () => {
     versions: state.versions,
     page: state.page,
   }));
-  const latestVersionId = getLatestVersionId(versions.data);
+  const latestVersionId = page === 1 ? getLatestVersionId(versions.data) : null;
 
   return (
     <Box flex={1} overflow="auto">

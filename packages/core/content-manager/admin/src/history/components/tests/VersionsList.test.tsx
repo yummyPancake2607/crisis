@@ -66,4 +66,37 @@ describe('VersionsList', () => {
     await user.click(versions[0]);
     expect(await screen.findByText('?id=26')).toBeInTheDocument();
   });
+
+  it('does not mark any version as current on older pages', async () => {
+    const page2Versions = {
+      ...mockHistoryVersionsData.historyVersions,
+      meta: {
+        ...mockHistoryVersionsData.historyVersions.meta,
+        pagination: {
+          ...mockHistoryVersionsData.historyVersions.meta.pagination,
+          page: 2,
+        },
+      },
+    };
+
+    render(
+      <HistoryProvider
+        {...({
+          page: 2,
+          versions: page2Versions,
+        } as unknown as React.ComponentProps<typeof HistoryProvider>)}
+      >
+        <VersionsList />
+      </HistoryProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
+    });
+
+    const versions = screen.getAllByRole('link');
+    versions.forEach((versionCard) => {
+      expect(within(versionCard).queryByText(/current/i)).not.toBeInTheDocument();
+    });
+  });
 });
