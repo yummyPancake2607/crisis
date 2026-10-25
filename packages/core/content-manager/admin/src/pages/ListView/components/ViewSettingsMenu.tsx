@@ -111,15 +111,11 @@ const FieldPicker = ({ headers = EMPTY_HEADERS, resetHeaders, setHeaders }: Fiel
      */
     const isDisplayed = headers.includes(name);
 
-    const newHeaders = headers.reduce<string[]>((acc, header) => {
-      if (header === name) {
-        return isDisplayed ? [...acc, header] : acc;
-      }
+    const newHeaders = isDisplayed
+      ? headers.filter((header) => header !== name)
+      : [...headers, name];
 
-      return isDisplayed ? acc : [...acc, header];
-    }, []);
-
-    setHeaders(isDisplayed ? newHeaders : [...newHeaders, name]);
+    setHeaders(newHeaders);
   };
 
   const handleReset = () => {
