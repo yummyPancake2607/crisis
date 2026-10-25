@@ -131,7 +131,15 @@ const extractHandlerParts = (name: string) => {
   const controllerName = name.slice(0, name.lastIndexOf('.'));
   const actionName = name.slice(name.lastIndexOf('.') + 1);
 
-  return { controllerName, actionName };
+  const [namespace, path] = name.split(UID_SEPARATOR);
+  const segments = path.split('.');
+  const actionName = segments.pop() ?? '';
+  const controllerPath = segments.join('.');
+
+  return {
+    controllerName: `${namespace}${UID_SEPARATOR}${controllerPath}`,
+    actionName,
+  };
 };
 
 const getAction = (route: Core.Route, strapi: Core.Strapi) => {
