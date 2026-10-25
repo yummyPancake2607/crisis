@@ -85,7 +85,7 @@ const toCronMonth = (month: number): number => {
     return month;
   }
 
-  return ((month % MONTHS_IN_YEAR) + MONTHS_IN_YEAR) % MONTHS_IN_YEAR;
+  return (((month % MONTHS_IN_YEAR) + MONTHS_IN_YEAR) % MONTHS_IN_YEAR) + 1;
 };
 
 const monthToField = (segment: unknown): string => {
