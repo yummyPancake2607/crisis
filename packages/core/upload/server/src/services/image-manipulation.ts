@@ -226,15 +226,16 @@ const generateResponsiveFormats = async (file: UploadableFile) => {
   const breakpoints = getBreakpoints();
   const results = [];
 
-  // Largest first: as soon as a breakpoint no longer shrinks the image, the image is
-  // already smaller than the remaining ones.
+  // Largest first, skipping (not stopping at) any breakpoint that would not
+  // shrink the image: a breakpoint larger than the image's longest side
+  // produces no smaller variant, but smaller breakpoints still can.
   const keysBySize = Object.keys(breakpoints).sort((a, b) => breakpoints[b] - breakpoints[a]);
 
   for (const key of keysBySize) {
     const breakpoint = breakpoints[key];
 
     if (!breakpointSmallerThan(breakpoint, originalDimensions)) {
-      break;
+      continue;
     }
 
     results.push(await generateBreakpoint(key, { file, breakpoint }));
@@ -266,11 +267,14 @@ const generateBreakpoint = async (
 };
 
 const breakpointSmallerThan = (breakpoint: number, { width, height }: Dimensions) => {
-  // `fit: inside` scales the image down into a breakpoint x breakpoint box, so it only
-  // produces a smaller image when the box does not contain the image already.
-  const shortestSide = Math.min(width ?? 0, height ?? 0);
+  // `fit: inside` scales the image down into a breakpoint x breakpoint box, so it
+  // produces a smaller image exactly when the box does not contain the image
+  // already, i.e. when at least one side exceeds the breakpoint. That is the
+  // longest side, not the shortest: a wide or tall image still shrinks even
+  // though its short side is below the breakpoint.
+  const longestSide = Math.max(width ?? 0, height ?? 0);
 
-  return breakpoint < shortestSide;
+  return breakpoint < longestSide;
 };
 
 /**
