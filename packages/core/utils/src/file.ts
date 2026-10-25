@@ -12,7 +12,11 @@ const bytesToHumanReadable = (bytes: number) => {
   let unit = 0;
   let size = bytes;
 
-  while (size > 1 && unit < sizes.length - 1) {
+  // Step up a unit only when the value actually reaches the next unit.
+  // Dividing while the value is merely greater than 1 overshoots by one unit
+  // (5,000,000 bytes became 0.005 GB, rounded to "0 GB") instead of stopping
+  // at the largest unit that keeps the value at or above 1.
+  while (size >= 1000 && unit < sizes.length - 1) {
     size /= 1000;
     unit += 1;
   }
