@@ -140,26 +140,16 @@ const PaginationButton = ({ page, children }: PaginationButtonProps) => {
  * VersionsListItems
  * -----------------------------------------------------------------------------------------------*/
 
-/**
- * The versions are ordered by creation date, newest first, but a restore can be saved while the
- * list is open, so the newest one is resolved from the timestamps rather than from the position.
- */
-const getLatestVersionId = (versions: HistoryVersions.HistoryVersionDataResponse[]) =>
-  versions.reduce<HistoryVersions.HistoryVersionDataResponse | null>((latest, version) => {
-    if (!latest || new Date(version.createdAt) > new Date(latest.createdAt)) {
-      return version;
-    }
-
-    return latest;
-  }, null)?.id;
-
 const VersionsListItems = () => {
   const { formatMessage } = useIntl();
   const { versions, page } = useHistoryContext('VersionsListItems', (state) => ({
     versions: state.versions,
     page: state.page,
   }));
-  const latestVersionId = getLatestVersionId(versions.data);
+
+  // The current version is the newest one, which leads the first page; older pages
+  // hold no current version at all.
+  const latestVersionId = page === 1 ? versions.data[0]?.id : undefined;
 
   return (
     <Box flex={1} overflow="auto">
