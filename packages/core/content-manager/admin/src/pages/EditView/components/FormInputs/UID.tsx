@@ -48,8 +48,10 @@ const UID_REGEX = /^[A-Za-z0-9-_.~]*$/;
  * server. `null` keeps the notice until the field is checked again.
  */
 const AVAILABILITY_NOTICE_TIMEOUTS: Record<'available' | 'unavailable', number | null> = {
-  available: null,
-  unavailable: 4000,
+  // "Available" is good news that can fade away; "Unavailable" is a problem the
+  // user must act on, so it stays until the value is checked again.
+  available: 4000,
+  unavailable: null,
 };
 
 const getAvailabilityNoticeTimeout = (availability?: CheckUIDAvailability.Response) => {
