@@ -304,7 +304,10 @@ const LeftMenu = ({ isFullPage = false }: { isFullPage?: boolean }) => {
                 }).sort((a, b) => compareLinks(a.link, b.link))
               : null;
 
-            const count = linkCountsBySection[section.id] ?? 0;
+            // While searching, the badge must reflect the filtered list actually
+            // shown, not the unfiltered section total. `matches` is exactly the
+            // list rendered below, including links surfaced by a folder-name match.
+            const count = matches ? matches.length : (linkCountsBySection[section.id] ?? 0);
 
             const sectionItems = matches
               ? matches.map(({ link, path }) => (
