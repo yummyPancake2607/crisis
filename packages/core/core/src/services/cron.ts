@@ -78,23 +78,47 @@ const segmentToField = (segment: unknown, fallback = '*', offset = 0): string =>
 const MONTHS_IN_YEAR = 12;
 
 /**
- * Recurrence specs count months from 0, cron patterns from 1.
+ * Recurrence specs count months from 0, cron patterns from 1, so a spec
+ * month must be shifted by one (and wrapped into 1..12) before it becomes a
+ * cron field. Without the shift, December (11) becomes November (11) and
+ * January (0) becomes an invalid cron month (0).
  */
 const toCronMonth = (month: number): number => {
   if (!Number.isInteger(month)) {
     return month;
   }
 
-  return ((month % MONTHS_IN_YEAR) + MONTHS_IN_YEAR) % MONTHS_IN_YEAR;
+  return (((month % MONTHS_IN_YEAR) + MONTHS_IN_YEAR) % MONTHS_IN_YEAR) + 1;
 };
 
 const monthToField = (segment: unknown): string => {
+  if (segment === null || segment === undefined) {
+    return '*';
+  }
+
   if (typeof segment === 'number') {
     return String(toCronMonth(segment));
   }
 
+  if (typeof segment === 'string') {
+    // A numeric string names a 0-based month just like a number does;
+    // a month name is passed through unchanged.
+    return /^\d+$/.test(segment) ? String(toCronMonth(Number(segment))) : segment;
+  }
+
   if (Array.isArray(segment)) {
     return segment.map((item) => monthToField(item)).join(',');
+  }
+
+  if (isPlainObject(segment)) {
+    const start = segment.start ?? segment.from;
+    const end = segment.end ?? segment.to;
+
+    if (start !== null && start !== undefined && end !== null && end !== undefined) {
+      const range = `${monthToField(start)}-${monthToField(end)}`;
+      const step = toSegmentPart(segment.step);
+      return step === null ? range : `${range}/${step}`;
+    }
   }
 
   return segmentToField(segment);
