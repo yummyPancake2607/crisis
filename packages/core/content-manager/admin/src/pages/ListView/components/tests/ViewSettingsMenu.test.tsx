@@ -106,6 +106,21 @@ describe('ViewSettingsMenu', () => {
     await user.click(document.body);
   });
 
+  it('should remove only the unchecked header', async () => {
+    const setHeadersMock = jest.fn();
+    const { user } = render({
+      headers: ['documentId', 'createdAt', 'postal_code', 'updatedAt'],
+      setHeaders: setHeadersMock,
+    });
+
+    await user.click(screen.getByRole('button', { name: 'View Settings' }));
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'createdAt' }));
+
+    expect(setHeadersMock).toHaveBeenCalledWith(['documentId', 'postal_code', 'updatedAt']);
+
+    await user.click(document.body);
+  });
+
   it('should reset the header selection when the reset button is clicked', async () => {
     const resetHeadersMock = jest.fn();
     const { user } = render({
