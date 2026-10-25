@@ -514,6 +514,7 @@ const SelectedEntriesModalContent = ({
 
       if (status === 'published') {
         counts.published += 1;
+        return;
       }
 
       if (status === 'modified') {
