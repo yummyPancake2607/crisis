@@ -366,6 +366,50 @@ describe('Sanitize visitors util', () => {
       } as any;
     });
 
+    test('checks the target permission for bidirectional relations', async () => {
+      const remove = jest.fn();
+      const set = jest.fn();
+      const categoryRelation = {
+        type: 'relation',
+        relation: 'manyToMany',
+        target: 'api::category.category',
+        inversedBy: 'articles',
+      };
+
+      global.strapi = {
+        auth: {
+          verify(_auth: unknown, { scope }: { scope: string }) {
+            if (scope === 'api::category.category.find') {
+              throw new Error('Unauthorized');
+            }
+
+            return true;
+          },
+        },
+      } as any;
+
+      await removeRestrictedRelationsFn(
+        {
+          data: { categories: [{ id: 1, name: 'Secret category' }] },
+          key: 'categories',
+          attribute: categoryRelation,
+          schema: {
+            uid: 'api::article.article',
+            kind: 'collectionType',
+            info: { singularName: 'article', pluralName: 'articles' },
+            options: {},
+            attributes: { categories: categoryRelation },
+          } as any,
+          value: {},
+          path: { attribute: null, raw: null },
+        },
+        { remove, set }
+      );
+
+      expect(remove).toHaveBeenCalledWith('categories');
+      expect(set).not.toHaveBeenCalled();
+    });
+
     test('keeps creator relations with populateCreatorFields true', async () => {
       const remove = jest.fn();
       const set = jest.fn();
