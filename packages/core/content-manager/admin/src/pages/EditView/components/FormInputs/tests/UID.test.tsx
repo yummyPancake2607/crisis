@@ -211,4 +211,45 @@ describe('UIDInput', () => {
     expect(screen.queryByText('Available')).not.toBeInTheDocument();
     expect(screen.queryByText('Unavailable')).not.toBeInTheDocument();
   });
+
+  test('Available notice disappears after timeout while Unavailable notice persists', async () => {
+    jest.useFakeTimers({ doNotFake: ['queueMicrotask', 'setImmediate'] });
+    const { user } = render({
+      required: true,
+      initialValues: {
+        name: 'init',
+      },
+    });
+    await waitForInput();
+
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, 'not-taken');
+
+    act(() => {
+      jest.advanceTimersByTime(300);
+    });
+
+    await waitFor(() => expect(screen.queryByTestId('loading-wrapper')).not.toBeInTheDocument());
+    expect(await screen.findByText(/^Available$/)).toBeInTheDocument();
+
+    act(() => {
+      jest.advanceTimersByTime(4000);
+    });
+    expect(screen.queryByText(/^Available$/)).not.toBeInTheDocument();
+
+    await user.type(input, 'taken');
+    act(() => {
+      jest.advanceTimersByTime(300);
+    });
+    expect(await screen.findByText(/^Unavailable$/)).toBeInTheDocument();
+
+    act(() => {
+      jest.advanceTimersByTime(4000);
+    });
+    expect(screen.getByText(/^Unavailable$/)).toBeInTheDocument();
+
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
 });
