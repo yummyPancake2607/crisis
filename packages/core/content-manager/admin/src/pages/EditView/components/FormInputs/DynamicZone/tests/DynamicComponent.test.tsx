@@ -241,6 +241,23 @@ describe('DynamicComponent', () => {
 
       expect(onAddComponent).toHaveBeenCalledWith('blog.test-como', 0);
     });
+
+    it('should call the onAddComponent callback with the next index when adding below', async () => {
+      const onAddComponent = jest.fn();
+      const { user } = render({
+        dynamicComponentsByCategory,
+        onAddComponent,
+        index: 0,
+        totalLength: 2,
+      });
+
+      await screen.findByRole('button', { name: 'component - test' });
+      await user.click(screen.getByRole('button', { name: 'More actions' }));
+      await user.click(screen.getByRole('menuitem', { name: 'Add component below' }));
+      fireEvent.click(screen.getByRole('menuitem', { name: 'component' }));
+
+      expect(onAddComponent).toHaveBeenCalledWith('blog.test-como', 1);
+    });
   });
 
   /**

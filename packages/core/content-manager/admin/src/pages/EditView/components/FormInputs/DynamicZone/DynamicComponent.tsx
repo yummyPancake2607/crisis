@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+// eslint-disable-next-line import/no-unresolved
 import { useForm, useIsDesktop } from '@strapi/admin/strapi-admin';
 import {
   Accordion,
@@ -37,15 +38,14 @@ type AddComponentPosition = 'above' | 'below';
 
 /**
  * Resolves where a component picked from the "add component above/below" menus lands in the
- * dynamic zone. The zone can only hold the positions it already has, so the target is kept
- * within the bounds of the current list.
+ * dynamic zone. Inserting below the last component appends it to the zone.
  */
 const resolveInsertIndex = (index: number, position: AddComponentPosition, totalLength: number) => {
   if (position === 'above') {
     return index;
   }
 
-  return Math.min(index, Math.max(totalLength - 1, 0));
+  return Math.min(index + 1, totalLength);
 };
 
 interface DynamicComponentProps
