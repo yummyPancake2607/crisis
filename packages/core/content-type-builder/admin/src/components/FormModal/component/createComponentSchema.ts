@@ -5,17 +5,10 @@ import * as yup from 'yup';
 import { getTrad } from '../../../utils/getTrad';
 import { createComponentUid } from '../utils/createUid';
 
-const CATEGORY_PART_SEPARATOR = '_';
-const CATEGORY_PART_REGEX = /^[A-Za-z0-9]+$/;
+const CATEGORY_NAME_REGEX = /^[A-Za-z][-_0-9A-Za-z]*$/;
 
 const isValidCategoryName = (value: string) => {
-  const parts = value.split(CATEGORY_PART_SEPARATOR);
-
-  if (!parts.every((part) => CATEGORY_PART_REGEX.test(part))) {
-    return false;
-  }
-
-  return /^[A-Za-z]/.test(value);
+  return CATEGORY_NAME_REGEX.test(value);
 };
 
 export const createComponentSchema = (
